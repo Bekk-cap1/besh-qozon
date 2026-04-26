@@ -32,8 +32,9 @@ export function middleware() {
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
         "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' blob: data:",
-        "font-src 'self'",
+        // QR-коды, аватарки филиалов, картинки меню — могут быть с любых HTTPS-доменов
+        "img-src 'self' blob: data: https:",
+        "font-src 'self' data:",
         `connect-src ${connect}`,
         "frame-ancestors 'none'",
         "base-uri 'self'",

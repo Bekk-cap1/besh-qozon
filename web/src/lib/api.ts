@@ -13,6 +13,19 @@
 export function apiBase(): string {
   const env = process.env.NEXT_PUBLIC_API_URL;
   if (env && env.trim()) return env.replace(/\/$/, "");
+
+  // На проде без NEXT_PUBLIC_API_URL фолбэк на window.location:4000
+  // даст неработающий URL вида https://my-app.vercel.app:4000/api.
+  // Лучше явно сообщить разработчику и не плодить странных запросов.
+  if (process.env.NODE_ENV === "production") {
+    if (typeof window !== "undefined") {
+      console.error(
+        "[api] NEXT_PUBLIC_API_URL is not set. Set it in your hosting env vars.",
+      );
+    }
+    return "/api"; // относительный путь — пусть упадёт на этом же домене, чем на :4000
+  }
+
   if (typeof window !== "undefined") {
     const host = window.location.hostname || "localhost";
     return `http://${host}:4000/api`;

@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 const workHours = { open: '10:00', close: '22:00' };
 
-async function main() {
+export async function main() {
   await prisma.payment.deleteMany();
   await prisma.reservation.deleteMany();
   await prisma.restaurantTable.deleteMany();
@@ -119,10 +119,12 @@ async function main() {
   }
 }
 
-main()
-  .then(() => prisma.$disconnect())
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+if (require.main === module) {
+  main()
+    .then(() => prisma.$disconnect())
+    .catch(async (e) => {
+      console.error(e);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+}

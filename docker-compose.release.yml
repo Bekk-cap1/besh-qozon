@@ -1,0 +1,55 @@
+# Пример прод-стека: Postgres + Redis + API + Web.
+# Сборка: из корня besh-qozon
+#   docker compose -f docker-compose.release.yml build --build-arg NEXT_PUBLIC_API_URL=https://api.example.com/api web
+# Перед первым запуском API: prisma migrate deploy (внутри контейнера или CI).
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: beshqozon
+    volumes:
+      - pg_release:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d beshqozon"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/beshqozon?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-replace-with-long-random-secret}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000,http://localhost:3001}
+      ALLOW_DEV_ADMIN: "false"
+      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api}
+    ports:
+      - "3001:3000"
+    depends_on:
+      - api
+
+volumes:
+  pg_release:

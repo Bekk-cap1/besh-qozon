@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Beshqozon — презентация для руководства</title>
+  <style>
+    :root {
+      --bg: #0f1412;
+      --card: #16231c;
+      --accent: #059669;
+      --accent2: #34d399;
+      --text: #ecfdf5;
+      --muted: #94a3b8;
+      --font: system-ui, "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); }
+    .deck {
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .slide {
+      display: none;
+      max-width: 960px;
+      width: 100%;
+      background: linear-gradient(145deg, var(--card), #0d1914);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      border-radius: 16px;
+      padding: 2.5rem 3rem;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      animation: in 0.35s ease;
+    }
+    .slide.active { display: block; }
+    @keyframes in {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    h1 { font-size: 2.25rem; font-weight: 700; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
+    h2 { font-size: 1.65rem; margin: 0 0 1rem; color: var(--accent2); font-weight: 600; }
+    .uz { font-size: 0.95rem; color: var(--muted); margin-top: 0.35rem; font-style: italic; }
+    ul { margin: 1rem 0 0; padding-left: 1.25rem; line-height: 1.65; }
+    li { margin-bottom: 0.5rem; }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent2);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+    .footer {
+      position: fixed;
+      bottom: 1rem;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .hint { font-size: 0.85rem; color: var(--muted); margin-top: 2rem; }
+    @media print {
+      .slide { display: block !important; page-break-after: always; box-shadow: none; }
+      .footer, .hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck" id="deck">
+    <section class="slide active" data-i="0">
+      <span class="badge">Beshqozon · 2026</span>
+      <h1>Цифровая бронь столиков</h1>
+      <p class="uz">Restoranlar uchun stol band qilish tizimi — qisqa ko‘rinish.</p>
+    </section>
+
+    <section class="slide" data-i="1">
+      <h2>Задача</h2>
+      <ul>
+        <li>Снизить нагрузку на администраторов и телефонные линии.</li>
+        <li>Показать гостю свободные столы по филиалу, дате и времени.</li>
+        <li>Зафиксировать депозит и уменьшить no-show.</li>
+      </ul>
+      <p class="uz">Maqsad: telefon yukini kamaytirish, bandlarni shaffof qilish.</p>
+    </section>
+
+    <section class="slide" data-i="2">
+      <h2>Решение</h2>
+      <ul>
+        <li>Веб-приложение для гостя: выбор филиала → слот → зона → интерактивная карта столов.</li>
+        <li>Оплата депозита (mock в dev, интеграции Payme / Click).</li>
+        <li>Админ-панель: брони, зоны, массовое добавление столов (например, улица).</li>
+      </ul>
+      <p class="uz">Mehmon: /bron; boshqaruv: /admin.</p>
+    </section>
+
+    <section class="slide" data-i="3">
+      <h2>Функциональность для бизнеса</h2>
+      <ul>
+        <li>Несколько филиалов, зоны (внутри / улица / VIP), типы столов и вместимость.</li>
+        <li>Уведомления и напоминания через очередь задач (Redis + BullMQ).</li>
+        <li>Политика отмены и no-show: блокировка повторных броней при злоупотреблениях.</li>
+      </ul>
+      <p class="uz">Filial va zonalar bo‘yicha moslashuvchan konfiguratsiya.</p>
+    </section>
+
+    <section class="slide" data-i="4">
+      <h2>Технологии</h2>
+      <ul>
+        <li>Фронт: Next.js 15, React, Tailwind, Konva (карта зала).</li>
+        <li>Бэкенд: NestJS 11, Prisma, PostgreSQL, Socket.IO для обновления столов в реальном времени.</li>
+        <li>Инфраструктура: Docker, пример <code style="color:var(--accent2)">docker-compose.release.yml</code>.</li>
+      </ul>
+      <p class="uz">Zamonaviy stack — masshtablash va xavfsizlik uchun.</p>
+    </section>
+
+    <section class="slide" data-i="5">
+      <h2>Безопасность</h2>
+      <ul>
+        <li>Вход по SMS OTP, JWT, роли пользователя и администратора.</li>
+        <li>Throttling и защита от перебора OTP; в production отключён dev-admin.</li>
+        <li>Чеклист релиза: <code style="color:var(--accent2)">docs/RELEASE-CHECKLIST.md</code>.</li>
+      </ul>
+      <p class="uz">JWT, cheklovlar, prod uchun sozlamalar ro‘yxati.</p>
+    </section>
+
+    <section class="slide" data-i="6">
+      <h2>Монетизация и платежи</h2>
+      <ul>
+        <li>Депозит за бронь; VIP-столы с увеличенной суммой.</li>
+        <li>Подготовлены потоки Payme (JSON-RPC) и Click (redirect); требуют боевых ключей.</li>
+      </ul>
+      <p class="uz">To‘lov provayderlari integratsiyasi — prod kalitlari bilan yoqiladi.</p>
+    </section>
+
+    <section class="slide" data-i="7">
+      <h2>Этапы развития</h2>
+      <ul>
+        <li>Сейчас: стабильный веб-MVP, API, админка каталога столов.</li>
+        <li>Далее: нативные iOS/Android, push-уведомления, аналитика загрузки зала.</li>
+      </ul>
+      <p class="uz">Keyingi qadam: mobil ilovalar va analitika.</p>
+    </section>
+
+    <section class="slide" data-i="8">
+      <h2>Метрики успеха (ориентиры)</h2>
+      <ul>
+        <li>Доля броней через приложение / сайт.</li>
+        <li>Снижение отмен и no-show после депозита.</li>
+        <li>Время обработки одной брони персоналом.</li>
+      </ul>
+      <p class="uz">KPI: onlayn ulush, no-show, xizmat vaqti.</p>
+    </section>
+
+    <section class="slide" data-i="9">
+      <h2>Вопросы</h2>
+      <p>Готовы уточнить приоритеты интеграций, SLA и пилотный филиал.</p>
+      <p class="uz">Integratsiya ustuvorliklari va pilot filial — muhokama qilishga tayyormiz.</p>
+      <p class="hint">Управление: стрелки ← → или пробел. Печать: Ctrl+P (по одному слайду на страницу в браузере с разрывами).</p>
+    </section>
+  </div>
+  <div class="footer"><span id="num">1 / 10</span></div>
+  <script>
+    const slides = [...document.querySelectorAll(".slide")];
+    let i = 0;
+    function show(n) {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((s, j) => s.classList.toggle("active", j === i));
+      document.getElementById("num").textContent = i + 1 + " / " + slides.length;
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); show(i + 1); }
+      if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(i - 1); }
+      if (e.key === "Home") show(0);
+      if (e.key === "End") show(slides.length - 1);
+    });
+  </script>
+</body>
+</html>

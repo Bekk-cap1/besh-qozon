@@ -1,0 +1,103 @@
+# Render Blueprint — поднимает Postgres + Redis + API одним кликом.
+# Использование:
+#   1. Закоммить и запушь этот файл в main.
+#   2. На Render: New → Blueprint → выбери репо Bekk-cap1/besh-qozon.
+#   3. Render создаст 3 сервиса автоматически. Допиши секретные env-переменные
+#      (sync: false) на странице сервиса beshqozon-api.
+
+databases:
+  - name: beshqozon-db
+    plan: free
+    databaseName: beshqozon
+    user: beshqozon
+    postgresMajorVersion: 16
+
+services:
+  # --- Redis (Key Value) для BullMQ и Socket.IO -------------------------------
+  - type: redis
+    name: beshqozon-redis
+    plan: free
+    region: frankfurt
+    ipAllowList: [] # доступ только из приватной сети Render
+
+  # --- API (NestJS, Docker) ---------------------------------------------------
+  - type: web
+    name: beshqozon-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./docker/api.Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: beshqozon-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: beshqozon-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENABLE_SWAGGER
+        value: "false"
+      - key: ENABLE_API_HSTS
+        value: "true"
+      - key: TRUST_PROXY_HOPS
+        value: "1"
+      # Origins фронта (через запятую). Поменяй после деплоя web.
+      - key: WEB_ORIGIN
+        value: "http://localhost:3000"
+      # Dev-OTP оставляем, чтобы можно было тестить без реальных SMS.
+      # На проде поставь свой код или убери и подключи Eskiz/Telegram.
+      - key: DEV_OTP
+        value: "123456"
+      # Лучше задать вручную после деплоя в Render dashboard.
+      - key: ALLOW_DEV_ADMIN
+        value: "false"
+      - key: ADMIN_LOGIN
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # Telegram bot — заполни в dashboard вручную.
+      - key: TELEGRAM_ENABLED
+        value: "false"
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        value: "BeshqozonBot"
+      # Eskiz SMS — опционально.
+      - key: ESKIZ_EMAIL
+        sync: false
+      - key: ESKIZ_PASSWORD
+        sync: false
+      - key: ESKIZ_FROM
+        value: "4546"
+      # Payme / Click — опционально (заполни если нужны реальные платежи).
+      - key: PAYME_MERCHANT_ID
+        sync: false
+      - key: PAYME_MERCHANT_KEY
+        sync: false
+      - key: PAYME_RETURN_URL
+        value: "http://localhost:3000/bron"
+      - key: PAYME_SKIP_AUTH
+        value: "true"
+      - key: CLICK_SERVICE_ID
+        sync: false
+      - key: CLICK_MERCHANT_ID
+        sync: false
+      - key: CLICK_SECRET_KEY
+        sync: false
+      - key: CLICK_MERCHANT_USER_ID
+        value: "1"
+      - key: CLICK_RETURN_URL
+        value: "http://localhost:3000/bron"
+      - key: CLICK_SKIP_SIGN
+        value: "true"

@@ -8,6 +8,7 @@
 databases:
   - name: beshqozon-db
     plan: free
+    region: oregon
     databaseName: beshqozon
     user: beshqozon
     postgresMajorVersion: 16
@@ -17,7 +18,7 @@ services:
   - type: redis
     name: beshqozon-redis
     plan: free
-    region: frankfurt
+    region: oregon
     ipAllowList: [] # доступ только из приватной сети Render
 
   # --- API (NestJS, Docker) ---------------------------------------------------
@@ -25,7 +26,7 @@ services:
     name: beshqozon-api
     runtime: docker
     plan: free
-    region: frankfurt
+    region: oregon
     dockerfilePath: ./docker/api.Dockerfile
     dockerContext: .
     healthCheckPath: /api/health

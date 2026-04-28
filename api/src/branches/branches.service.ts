@@ -6,6 +6,7 @@ import {
   MAX_DAYS_AHEAD,
   RESERVATION_DURATION_MINUTES,
 } from '../constants/booking';
+import type { WorkHoursJson } from '../utils/slots';
 
 function isoDate(d: Date): string {
   const y = d.getFullYear();
@@ -155,6 +156,8 @@ export class BranchesService {
     }
 
     const g = Math.max(1, guests || 1);
+    const wh = b.workHours as WorkHoursJson | null;
+    const slotDuration = wh?.slotDuration ?? RESERVATION_DURATION_MINUTES;
     const slots = buildSlotLabelsForDate(dateStr, b.workHours);
 
     const tables = await this.prisma.restaurantTable.findMany({
@@ -191,7 +194,7 @@ export class BranchesService {
 
     const result = slots.map((slot) => {
       const start = new Date(`${dateStr}T${slot}:00`);
-      const end = new Date(start.getTime() + RESERVATION_DURATION_MINUTES * 60_000);
+      const end = new Date(start.getTime() + slotDuration * 60_000);
       const busy = new Set<string>();
       for (const r of reservations) {
         if (r.startAt < end && r.endAt > start) busy.add(r.tableId);

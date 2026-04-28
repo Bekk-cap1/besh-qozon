@@ -1,6 +1,6 @@
 import { SLOT_STEP_MINUTES } from '../constants/booking';
 
-export type WorkHoursJson = { open?: string; close?: string };
+export type WorkHoursJson = { open?: string; close?: string; slotDuration?: number };
 
 const DEFAULT_OPEN = '10:00';
 const DEFAULT_CLOSE = '22:00';
@@ -14,10 +14,19 @@ function minutesSinceMidnight(d: Date): number {
   return d.getHours() * 60 + d.getMinutes();
 }
 
+function parseWorkHours(workHours: unknown): WorkHoursJson {
+  if (!workHours) return {};
+  if (typeof workHours === 'string') {
+    const parts = workHours.split('-');
+    return { open: parts[0]?.trim(), close: parts[1]?.trim() };
+  }
+  return workHours as WorkHoursJson;
+}
+
 export function buildSlotLabelsForDate(dateStr: string, workHours: unknown): string[] {
   const day = new Date(`${dateStr}T12:00:00`);
   if (Number.isNaN(day.getTime())) return [];
-  const wh = (workHours ?? {}) as WorkHoursJson;
+  const wh = parseWorkHours(workHours);
   const open = wh.open && /^\d{1,2}:\d{2}$/.test(wh.open) ? wh.open : DEFAULT_OPEN;
   const close = wh.close && /^\d{1,2}:\d{2}$/.test(wh.close) ? wh.close : DEFAULT_CLOSE;
   const o = parseHm(open);

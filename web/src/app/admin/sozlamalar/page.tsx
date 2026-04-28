@@ -90,6 +90,23 @@ function Body() {
   );
 }
 
+function parseWorkHoursString(wh: unknown): string {
+  if (typeof wh === "string") return wh;
+  if (wh && typeof wh === "object") {
+    const obj = wh as { open?: string; close?: string };
+    if (obj.open && obj.close) return `${obj.open}-${obj.close}`;
+  }
+  return "10:00-23:00";
+}
+
+function parseSlotDuration(wh: unknown): number {
+  if (wh && typeof wh === "object") {
+    const obj = wh as { slotDuration?: unknown };
+    if (typeof obj.slotDuration === "number") return obj.slotDuration;
+  }
+  return 120;
+}
+
 function BranchEditor({
   branch,
   token,
@@ -101,9 +118,8 @@ function BranchEditor({
 }) {
   const [name, setName] = useState(branch.name);
   const [address, setAddress] = useState(branch.address);
-  const [workHours, setWorkHours] = useState(
-    typeof branch.workHours === "string" ? branch.workHours : "10:00-23:00",
-  );
+  const [workHours, setWorkHours] = useState(() => parseWorkHoursString(branch.workHours));
+  const [slotDuration, setSlotDuration] = useState(() => parseSlotDuration(branch.workHours));
   const [lat, setLat] = useState(branch.lat != null ? String(branch.lat) : "");
   const [lng, setLng] = useState(branch.lng != null ? String(branch.lng) : "");
   const [isActive, setIsActive] = useState(branch.isActive);
@@ -147,6 +163,7 @@ function BranchEditor({
         name: name.trim(),
         address: address.trim(),
         workHours: workHours.trim() || undefined,
+        slotDurationMinutes: slotDuration,
         isActive,
       };
       if (lat.trim() === "") payload.lat = null;
@@ -200,6 +217,25 @@ function BranchEditor({
             placeholder="10:00-23:00"
             className="w-full rounded-xl border border-[color:var(--border)] bg-white px-3 py-2 text-sm"
           />
+        </L>
+        <L label={`Bron davomiyligi · ${slotDuration} daqiqa`}>
+          <div className="flex items-center gap-2">
+            <input
+              type="range"
+              min={30}
+              max={240}
+              step={30}
+              value={slotDuration}
+              onChange={(e) => setSlotDuration(Number(e.target.value))}
+              className="flex-1 accent-[color:var(--brand)]"
+            />
+            <span className="w-14 rounded-xl border border-[color:var(--border)] bg-white px-2 py-1.5 text-center text-sm font-semibold">
+              {slotDuration}
+            </span>
+          </div>
+          <div className="mt-1 flex justify-between text-[10px] text-[color:var(--muted)]">
+            <span>30</span><span>60</span><span>90</span><span>120</span><span>150</span><span>180</span><span>210</span><span>240</span>
+          </div>
         </L>
         <L label="Manzil">
           <input

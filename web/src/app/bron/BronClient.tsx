@@ -60,7 +60,10 @@ function addDays(d: Date, n: number) {
 }
 
 function isoDate(d: Date) {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function formatDatePill(iso: string) {
@@ -125,10 +128,24 @@ export default function BronClient() {
     provider: string;
   } | null>(null);
 
-  const dates = useMemo(() => {
-    const today = new Date();
-    return Array.from({ length: 15 }, (_, i) => isoDate(addDays(today, i)));
+  const [todayIso, setTodayIso] = useState(() => isoDate(new Date()));
+
+  useEffect(() => {
+    const refresh = () => setTodayIso(isoDate(new Date()));
+    const id = setInterval(refresh, 60_000);
+    const onVisible = () => { if (document.visibilityState === "visible") refresh(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVisible); };
   }, []);
+
+  useEffect(() => {
+    if (date < todayIso) setDate(todayIso);
+  }, [date, todayIso]);
+
+  const dates = useMemo(() => {
+    const today = new Date(`${todayIso}T00:00:00`);
+    return Array.from({ length: 15 }, (_, i) => isoDate(addDays(today, i)));
+  }, [todayIso]);
 
   const reloadBranches = useCallback(() => {
     setLoadErr(null);

@@ -1,7 +1,7 @@
 import { Body, ConflictException, Controller, Delete, Get, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { Prisma, TableStatus } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { IsBoolean, IsNumber, IsOptional, IsString, Length } from 'class-validator';
+import { IsBoolean, IsInt, IsNumber, IsOptional, IsString, Length, Max, Min } from 'class-validator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -37,6 +37,12 @@ class UpdateBranchDto {
   workHours?: string;
 
   @IsOptional()
+  @IsInt()
+  @Min(30)
+  @Max(240)
+  slotDurationMinutes?: number;
+
+  @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 }
@@ -62,7 +68,14 @@ export class AdminCatalogController {
     if (dto.address !== undefined) data.address = dto.address;
     if (dto.lat !== undefined) data.lat = dto.lat;
     if (dto.lng !== undefined) data.lng = dto.lng;
-    if (dto.workHours !== undefined) data.workHours = dto.workHours;
+    if (dto.workHours !== undefined || dto.slotDurationMinutes !== undefined) {
+      const cur = (exists.workHours as Record<string, unknown> | null) ?? {};
+      const [rawOpen, rawClose] = dto.workHours ? dto.workHours.split('-') : [];
+      const open = rawOpen?.trim() || (cur.open as string | undefined) || '10:00';
+      const close = rawClose?.trim() || (cur.close as string | undefined) || '22:00';
+      const slotDuration = dto.slotDurationMinutes ?? (cur.slotDuration as number | undefined) ?? 120;
+      data.workHours = { open, close, slotDuration };
+    }
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
     return this.prisma.branch.update({ where: { id }, data });
   }

@@ -160,7 +160,7 @@ export class BranchesService {
     const tables = await this.prisma.restaurantTable.findMany({
       where: {
         zone: { branchId },
-        status: 'AVAILABLE',
+        status: { not: 'MAINTENANCE' },
         seats: { gte: g },
       },
       select: { id: true, seats: true },

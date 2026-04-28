@@ -164,7 +164,6 @@ export class BranchesService {
       where: {
         zone: { branchId },
         status: { not: 'MAINTENANCE' },
-        seats: { gte: g },
       },
       select: { id: true, seats: true },
     });

@@ -296,6 +296,10 @@ export class ReservationsService implements OnModuleInit {
     }
     this.emitZone(table.zoneId);
 
+    const fmt = (d: Date) =>
+      d.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+    const dateStr2 = startAt.toLocaleDateString('uz-UZ');
+
     void this.telegram.notifyUser(
       userId,
       [
@@ -303,7 +307,8 @@ export class ReservationsService implements OnModuleInit {
         '',
         `Filial: <b>${r.branch.name}</b>`,
         `Stol: <b>${r.table.number}</b>`,
-        `Vaqt: <b>${r.startAt.toLocaleString('uz-UZ')}</b>`,
+        `Sana: <b>${dateStr2}</b>`,
+        `Vaqt: <b>${fmt(startAt)} – ${fmt(endAt)}</b>`,
         `Mehmonlar: <b>${r.guestsCount}</b>`,
         '',
         useBonus

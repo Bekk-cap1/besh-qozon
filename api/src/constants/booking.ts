@@ -2,6 +2,8 @@ export const DEPOSIT_UZS_DEFAULT = 50_000;
 export const DEPOSIT_UZS_VIP = 100_000;
 export const SLOT_STEP_MINUTES = 30;
 export const RESERVATION_DURATION_MINUTES = 120;
+/** За сколько минут до конца слота отправить мягкое напоминание гостю. */
+export const SLOT_ENDING_REMINDER_MINUTES = 15;
 export const HOLD_MINUTES = 10;
 export const MAX_DAYS_AHEAD = 14;
 export const MAX_GUESTS = 20;

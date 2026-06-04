@@ -5,6 +5,23 @@ export type WorkHoursJson = { open?: string; close?: string; slotDuration?: numb
 const DEFAULT_OPEN = '10:00';
 const DEFAULT_CLOSE = '22:00';
 
+/**
+ * Узбекистан — фиксированный UTC+5 (без перехода на летнее время).
+ * Все «настенные» время/дату брони привязываем к этому поясу, чтобы расчёт
+ * слотов на сервере (UTC) совпадал с временем, сохранённым из браузера.
+ */
+export const UZ_OFFSET = '+05:00';
+
+/** Начало суток по ташкентскому времени как мгновение (UTC). */
+export function uzDayStart(dateStr: string): Date {
+  return new Date(`${dateStr}T00:00:00${UZ_OFFSET}`);
+}
+
+/** Конец суток по ташкентскому времени как мгновение (UTC). */
+export function uzDayEnd(dateStr: string): Date {
+  return new Date(`${dateStr}T23:59:59${UZ_OFFSET}`);
+}
+
 function parseHm(s: string): { h: number; m: number } {
   const [h, m] = s.split(':').map((x) => parseInt(x, 10));
   return { h: h || 0, m: m || 0 };
@@ -45,7 +62,7 @@ export function buildSlotLabelsForDate(dateStr: string, workHours: unknown): str
 }
 
 export function combineDateAndTime(dateStr: string, timeHm: string): Date {
-  return new Date(`${dateStr}T${timeHm}:00`);
+  return new Date(`${dateStr}T${timeHm}:00${UZ_OFFSET}`);
 }
 
 export function isPastSlot(slotStart: Date): boolean {

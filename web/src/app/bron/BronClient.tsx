@@ -281,7 +281,9 @@ export default function BronClient() {
 
   const startAtIso = useMemo(() => {
     if (!date || !time) return "";
-    const d = new Date(`${date}T${time}:00`);
+    // Время брони фиксируем в поясе Узбекистана (UTC+5), не в поясе браузера,
+    // чтобы серверный расчёт слотов совпадал с сохранённым временем.
+    const d = new Date(`${date}T${time}:00+05:00`);
     return d.toISOString();
   }, [date, time]);
 

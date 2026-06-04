@@ -1,7 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ReviewsService } from '../reviews/reviews.service';
-import { buildSlotLabelsForDate, daysFromToday } from '../utils/slots';
+import {
+  buildSlotLabelsForDate,
+  combineDateAndTime,
+  daysFromToday,
+  uzDayEnd,
+  uzDayStart,
+} from '../utils/slots';
 import {
   MAX_DAYS_AHEAD,
   RESERVATION_DURATION_MINUTES,
@@ -179,8 +185,8 @@ export class BranchesService {
       };
     }
 
-    const dayStart = new Date(`${dateStr}T00:00:00`);
-    const dayEnd = new Date(`${dateStr}T23:59:59`);
+    const dayStart = uzDayStart(dateStr);
+    const dayEnd = uzDayEnd(dateStr);
     const reservations = await this.prisma.reservation.findMany({
       where: {
         tableId: { in: tableIds },
@@ -192,7 +198,7 @@ export class BranchesService {
     });
 
     const result = slots.map((slot) => {
-      const start = new Date(`${dateStr}T${slot}:00`);
+      const start = combineDateAndTime(dateStr, slot);
       const end = new Date(start.getTime() + slotDuration * 60_000);
       const busy = new Set<string>();
       for (const r of reservations) {

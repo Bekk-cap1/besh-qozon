@@ -26,4 +26,6 @@ RUN chown -R node:node /app
 EXPOSE 4000
 USER node
 WORKDIR /app/api
-CMD ["sh", "-c", "npx --no-install prisma migrate deploy --schema=prisma/schema.prisma && node dist/main.js"]
+# Free-tier DB может просыпаться/инициализироваться с задержкой — повторяем миграцию,
+# пока база не станет доступной (до ~10 попыток), затем стартуем сервер.
+CMD ["sh", "-c", "n=0; until npx --no-install prisma migrate deploy --schema=prisma/schema.prisma; do n=$((n+1)); if [ $n -ge 10 ]; then echo 'migrate failed after 10 attempts'; exit 1; fi; echo \"DB not ready, retry $n/10 in 5s...\"; sleep 5; done && node dist/main.js"]

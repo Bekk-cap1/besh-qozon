@@ -17,6 +17,7 @@ import {
   HOLD_MINUTES,
   LOYALTY_THRESHOLD,
   CANCEL_CUTOFF_MINUTES,
+  PREORDER_CANCEL_CUTOFF_MINUTES,
   MAX_ACTIVE_RESERVATIONS_PER_DAY,
   MAX_DAYS_AHEAD,
   MAX_DURATION_MINUTES,
@@ -342,7 +343,10 @@ export class ReservationsService implements OnModuleInit {
   }
 
   async cancel(id: string, userId: string) {
-    const r = await this.prisma.reservation.findFirst({ where: { id, userId } });
+    const r = await this.prisma.reservation.findFirst({
+      where: { id, userId },
+      include: { _count: { select: { preorderItems: true } } },
+    });
     if (!r) throw new NotFoundException('Bron topilmadi');
     if (
       r.status !== ReservationStatus.PENDING_PAYMENT &&
@@ -351,10 +355,17 @@ export class ReservationsService implements OnModuleInit {
       throw new BadRequestException('Bu holatda bekor qilib bo‘lmaydi');
     }
     if (r.status === ReservationStatus.CONFIRMED) {
+      // Предзаказ → кухня готовит заранее, поэтому окно отмены больше.
+      const hasPreorder = r._count.preorderItems > 0;
+      const cutoffMin = hasPreorder
+        ? PREORDER_CANCEL_CUTOFF_MINUTES
+        : CANCEL_CUTOFF_MINUTES;
       const msBefore = r.startAt.getTime() - Date.now();
-      if (msBefore < CANCEL_CUTOFF_MINUTES * 60 * 1000) {
+      if (msBefore < cutoffMin * 60 * 1000) {
         throw new BadRequestException(
-          `Bron boshlanishiga ${CANCEL_CUTOFF_MINUTES} daqiqadan kam qolganda bekor qilib bo‘lmaydi`,
+          hasPreorder
+            ? `Oldindan buyurtma bo‘lgani uchun bron boshlanishiga ${PREORDER_CANCEL_CUTOFF_MINUTES} daqiqadan kam qolganda bekor qilib bo‘lmaydi`
+            : `Bron boshlanishiga ${CANCEL_CUTOFF_MINUTES} daqiqadan kam qolganda bekor qilib bo‘lmaydi`,
         );
       }
     }

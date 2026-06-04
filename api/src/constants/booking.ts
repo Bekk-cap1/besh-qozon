@@ -13,6 +13,8 @@ export const SLOT_ENDING_REMINDER_MINUTES = 15;
 export const HOLD_MINUTES = 10;
 /** До скольких минут перед началом брони гость может бесплатно отменить (депозит возвращается). */
 export const CANCEL_CUTOFF_MINUTES = 30;
+/** Если есть предзаказ (кухня готовит заранее) — окно отмены больше. */
+export const PREORDER_CANCEL_CUTOFF_MINUTES = 120;
 export const MAX_DAYS_AHEAD = 14;
 export const MAX_GUESTS = 20;
 export const MAX_ACTIVE_RESERVATIONS_PER_DAY = 3;

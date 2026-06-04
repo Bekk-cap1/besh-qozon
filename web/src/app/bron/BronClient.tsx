@@ -959,6 +959,15 @@ export default function BronClient() {
                     </svg>
                   </div>
 
+                  {/* Политика отмены — чтобы гость знал до оплаты */}
+                  <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <span aria-hidden>ℹ️</span>
+                    <span>
+                      Bronni <b>boshlanishiga 30 daqiqa qolguncha</b> bepul bekor qilishingiz mumkin —
+                      depozit to&apos;liq qaytariladi. Undan keyin bekor qilinmaydi va depozit qaytarilmaydi.
+                    </span>
+                  </div>
+
                   {loyalty && loyalty.bonuses > 0 ? (
                     <LoyaltyBonusToggle
                       loyalty={loyalty}

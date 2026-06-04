@@ -16,6 +16,7 @@ import {
   DEPOSIT_UZS_VIP,
   HOLD_MINUTES,
   LOYALTY_THRESHOLD,
+  CANCEL_CUTOFF_MINUTES,
   MAX_ACTIVE_RESERVATIONS_PER_DAY,
   MAX_DAYS_AHEAD,
   MAX_DURATION_MINUTES,
@@ -351,8 +352,10 @@ export class ReservationsService implements OnModuleInit {
     }
     if (r.status === ReservationStatus.CONFIRMED) {
       const msBefore = r.startAt.getTime() - Date.now();
-      if (msBefore < 2 * 60 * 60 * 1000) {
-        throw new BadRequestException('2 soatdan kam vaqt qolganda bekor qilish cheklangan (TZ)');
+      if (msBefore < CANCEL_CUTOFF_MINUTES * 60 * 1000) {
+        throw new BadRequestException(
+          `Bron boshlanishiga ${CANCEL_CUTOFF_MINUTES} daqiqadan kam qolganda bekor qilib bo‘lmaydi`,
+        );
       }
     }
     const updated = await this.prisma.reservation.update({

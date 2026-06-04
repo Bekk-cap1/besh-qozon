@@ -6,6 +6,7 @@ import { ReservationJobsProducer } from '../jobs/reservation-jobs.producer';
 import { TelegramNotifyService } from '../telegram/telegram-notify.service';
 import { PaymeCheckoutService } from './payme-checkout.service';
 import { ClickCheckoutService } from './click-checkout.service';
+import { fmtUzDateTime } from '../utils/slots';
 
 @Injectable()
 export class PaymentsService {
@@ -158,7 +159,7 @@ export class PaymentsService {
 
     // Отправляем QR + подтверждение в Telegram (если привязан)
     const shortCode = shortFromUuid(res.id);
-    const when = res.startAt.toLocaleString('uz-UZ');
+    const when = fmtUzDateTime(res.startAt);
     void this.telegram.sendQR(
       res.userId,
       res.id,

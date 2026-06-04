@@ -3,6 +3,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { PrismaService } from '../prisma/prisma.service';
+import { uzHour } from '../utils/slots';
 
 function isoDay(d: Date): string {
   const y = d.getFullYear();
@@ -239,7 +240,7 @@ export class AdminStatsController {
     // По часам
     const hourly = new Array(24).fill(0).map((_, h) => ({ hour: h, count: 0 }));
     for (const r of reservations) {
-      hourly[r.startAt.getHours()].count += 1;
+      hourly[uzHour(r.startAt)].count += 1;
     }
 
     // По филиалам

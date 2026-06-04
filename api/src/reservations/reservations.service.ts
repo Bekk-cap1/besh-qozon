@@ -25,7 +25,13 @@ import {
   RESERVATION_DURATION_MINUTES,
   SLOT_STEP_MINUTES,
 } from '../constants/booking';
-import { daysFromToday, isPastSlot } from '../utils/slots';
+import {
+  daysFromToday,
+  fmtUzDate,
+  fmtUzDateTime,
+  fmtUzTime,
+  isPastSlot,
+} from '../utils/slots';
 
 @Injectable()
 export class ReservationsService implements OnModuleInit {
@@ -306,9 +312,8 @@ export class ReservationsService implements OnModuleInit {
     }
     this.emitZone(table.zoneId);
 
-    const fmt = (d: Date) =>
-      d.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
-    const dateStr2 = startAt.toLocaleDateString('uz-UZ');
+    const fmt = (d: Date) => fmtUzTime(d);
+    const dateStr2 = fmtUzDate(startAt);
 
     void this.telegram.notifyUser(
       userId,
@@ -333,7 +338,7 @@ export class ReservationsService implements OnModuleInit {
         '',
         `Filial: <b>${r.branch.name}</b>`,
         `Stol: <b>T-${r.table.number}</b>`,
-        `Vaqt: <b>${r.startAt.toLocaleString('uz-UZ')}</b>`,
+        `Vaqt: <b>${fmtUzDateTime(r.startAt)}</b>`,
         `Mehmonlar: <b>${r.guestsCount}</b>`,
         `Holat: <b>${useBonus ? 'Tasdiqlangan (bonus)' : 'To\'lov kutilmoqda'}</b>`,
       ].join('\n'),

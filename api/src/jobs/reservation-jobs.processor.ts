@@ -4,6 +4,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Job } from 'bullmq';
 import { DepositStatus, ReservationStatus } from '@prisma/client';
 import { RESERVATION_DURATION_MINUTES } from '../constants/booking';
+import { fmtUzTime } from '../utils/slots';
 import { PrismaService } from '../prisma/prisma.service';
 import { TelegramNotifyService } from '../telegram/telegram-notify.service';
 import type { BeshJob } from './reservation-job.types';
@@ -56,10 +57,7 @@ export class ReservationJobsProcessor extends WorkerHost {
       include: { user: true, branch: true, table: true },
     });
     if (!r || r.status !== ReservationStatus.CONFIRMED) return;
-    const when = r.startAt.toLocaleTimeString('uz-UZ', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const when = fmtUzTime(r.startAt);
     const sent = await this.telegram.notifyUser(
       r.userId,
       [
@@ -102,10 +100,7 @@ export class ReservationJobsProcessor extends WorkerHost {
     const slotEndsAt = r.startAt.getTime() + RESERVATION_DURATION_MINUTES * 60 * 1000;
     if (Date.now() > slotEndsAt + 5 * 60 * 1000) return;
 
-    const endTime = new Date(slotEndsAt).toLocaleTimeString('uz-UZ', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const endTime = fmtUzTime(new Date(slotEndsAt));
     await this.telegram.notifyUser(
       r.userId,
       [
@@ -185,10 +180,7 @@ export class ReservationJobsProcessor extends WorkerHost {
     });
     const free = candidates.filter((c) => c.reservations.length === 0).slice(0, 3);
 
-    const startTime = r.startAt.toLocaleTimeString('uz-UZ', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const startTime = fmtUzTime(r.startAt);
 
     if (free.length === 0) {
       // Нет свободных — отправляем мягкое предупреждение «возможна задержка».
@@ -234,7 +226,7 @@ export class ReservationJobsProcessor extends WorkerHost {
         `Filial: <b>${r.branch.name}</b>`,
         `Stol: <b>T-${r.table.number}</b> (${r.table.zone.name})`,
         '',
-        `Avvalgi bron: <code>${previous.id.slice(0, 8)}</code> · tugashi kerak edi: ${previous.endAt.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })}`,
+        `Avvalgi bron: <code>${previous.id.slice(0, 8)}</code> · tugashi kerak edi: ${fmtUzTime(previous.endAt)}`,
         `Yangi mehmon: ${r.user.name ?? r.user.phone} · ${r.guestsCount} kishi · ${startTime}`,
         '',
         free.length > 0

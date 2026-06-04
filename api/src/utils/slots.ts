@@ -22,6 +22,37 @@ export function uzDayEnd(dateStr: string): Date {
   return new Date(`${dateStr}T23:59:59${UZ_OFFSET}`);
 }
 
+const UZ_TZ = 'Asia/Tashkent';
+
+/** «HH:mm» по ташкентскому времени (для SMS/Telegram). */
+export function fmtUzTime(d: Date): string {
+  return d.toLocaleTimeString('uz-UZ', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: UZ_TZ,
+  });
+}
+
+/** Дата по ташкентскому времени. */
+export function fmtUzDate(d: Date): string {
+  return d.toLocaleDateString('uz-UZ', { timeZone: UZ_TZ });
+}
+
+/** Дата и время по ташкентскому времени. */
+export function fmtUzDateTime(d: Date): string {
+  return d.toLocaleString('uz-UZ', { timeZone: UZ_TZ });
+}
+
+/** Час (0–23) по ташкентскому времени — для отчётов по пиковым часам. */
+export function uzHour(d: Date): number {
+  const s = d.toLocaleString('en-GB', {
+    hour: '2-digit',
+    hour12: false,
+    timeZone: UZ_TZ,
+  });
+  return parseInt(s, 10) % 24;
+}
+
 function parseHm(s: string): { h: number; m: number } {
   const [h, m] = s.split(':').map((x) => parseInt(x, 10));
   return { h: h || 0, m: m || 0 };

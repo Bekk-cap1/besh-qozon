@@ -70,6 +70,8 @@ type Props = {
   tables: PlanTable[];
   selectedId: string | null;
   floorConfig?: string | null;
+  /** Минимальное число мест: столы меньше — нельзя выбрать (мало для гостей). */
+  minSeats?: number;
   onSelect: (id: string) => void;
   onRefresh?: () => void;
 };
@@ -88,6 +90,7 @@ export function InteractiveFloorPlan({
   tables,
   selectedId,
   floorConfig: floorConfigRaw,
+  minSeats = 0,
   onSelect,
   onRefresh,
 }: Props) {
@@ -268,7 +271,8 @@ export function InteractiveFloorPlan({
           {/* Столы */}
           {tables.map((t) => {
             const s = stateOf(t, selectedId);
-            const clickable = t.slotState === "free" && !t.maintenance;
+            const tooSmall = minSeats > 0 && t.seats < minSeats;
+            const clickable = t.slotState === "free" && !t.maintenance && !tooSmall;
             const left = (t.xPos - bounds.minX) * scale;
             const top = (t.yPos - bounds.minY) * scale;
             const w = TABLE_W * scale;
@@ -318,7 +322,11 @@ export function InteractiveFloorPlan({
                     {t.seats}k
                   </span>
                 ) : null}
-                {s !== "free" && s !== "selected" ? (
+                {s === "free" && tooSmall ? (
+                  <span className="pointer-events-none mt-1 rounded-full bg-black/20 px-1.5 py-0.5 text-[9px] font-bold">
+                    Kichik
+                  </span>
+                ) : s !== "free" && s !== "selected" ? (
                   <span className="pointer-events-none mt-1 rounded-full bg-black/20 px-1.5 py-0.5 text-[9px] font-bold">
                     {STATE_LABELS[s]}
                   </span>

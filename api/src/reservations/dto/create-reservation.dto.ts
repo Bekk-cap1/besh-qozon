@@ -38,6 +38,13 @@ export class CreateReservationDto {
   @Max(20)
   guestsCount!: number;
 
+  /** Сколько гость хочет сидеть (минуты). Кратно 30, 60–240. По умолчанию 120. */
+  @IsOptional()
+  @IsInt()
+  @Min(60)
+  @Max(240)
+  durationMinutes?: number;
+
   /** Использовать накопленный бонус — депозит 0, автоподтверждение */
   @IsOptional()
   @IsBoolean()

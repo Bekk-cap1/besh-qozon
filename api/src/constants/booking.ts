@@ -1,7 +1,13 @@
 export const DEPOSIT_UZS_DEFAULT = 50_000;
 export const DEPOSIT_UZS_VIP = 100_000;
 export const SLOT_STEP_MINUTES = 30;
+/** Длительность брони по умолчанию (если гость не выбрал). */
 export const RESERVATION_DURATION_MINUTES = 120;
+/** Гость может выбрать, сколько хочет сидеть (минуты). Кратно SLOT_STEP_MINUTES. */
+export const MIN_DURATION_MINUTES = 60;
+export const MAX_DURATION_MINUTES = 240;
+/** Допустимые варианты длительности для выбора гостем. */
+export const DURATION_OPTIONS_MINUTES = [60, 90, 120, 150, 180, 240];
 /** За сколько минут до конца слота отправить мягкое напоминание гостю. */
 export const SLOT_ENDING_REMINDER_MINUTES = 15;
 export const HOLD_MINUTES = 10;

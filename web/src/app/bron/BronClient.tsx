@@ -40,6 +40,20 @@ type Zone = {
 };
 type TablesPayload = { tables: PlanTable[]; zoneId: string; date: string; time: string };
 
+/** Варианты длительности брони (минуты + подпись на узбекском). */
+const DURATION_CHOICES: { minutes: number; label: string }[] = [
+  { minutes: 60, label: "1 soat" },
+  { minutes: 90, label: "1,5 soat" },
+  { minutes: 120, label: "2 soat" },
+  { minutes: 150, label: "2,5 soat" },
+  { minutes: 180, label: "3 soat" },
+  { minutes: 240, label: "4 soat" },
+];
+
+function durationLabel(minutes: number): string {
+  return DURATION_CHOICES.find((d) => d.minutes === minutes)?.label ?? `${minutes} daqiqa`;
+}
+
 const STEP_TITLES = [
   "Filial",
   "Sana va vaqt",
@@ -94,6 +108,7 @@ export default function BronClient() {
   const [slots, setSlots] = useState<string[]>([]);
   const [time, setTime] = useState<string | null>(initTime);
   const [guests, setGuests] = useState(initGuests);
+  const [durationMinutes, setDurationMinutes] = useState(120);
   const [zones, setZones] = useState<Zone[]>([]);
   const [zoneId, setZoneId] = useState<string | null>(initZone);
   const [tablesPayload, setTablesPayload] = useState<TablesPayload | null>(null);
@@ -277,6 +292,14 @@ export default function BronClient() {
     [tablesPayload, tableId],
   );
 
+  // Если число гостей выросло и выбранный стол стал мал — сбрасываем выбор.
+  useEffect(() => {
+    if (selectedTable && selectedTable.seats < guests) {
+      setTableId(null);
+      setReservation(null);
+    }
+  }, [guests, selectedTable]);
+
   const canAdvance = (s: number) => {
     switch (s) {
       case 1:
@@ -313,6 +336,7 @@ export default function BronClient() {
           tableId,
           startAt: startAtIso,
           guestsCount: guests,
+          durationMinutes,
           useBonus: useBonus && (loyalty?.bonuses ?? 0) > 0 ? true : undefined,
           items: cartToItems(preorderCart).length > 0 ? cartToItems(preorderCart) : undefined,
         }),
@@ -709,6 +733,32 @@ export default function BronClient() {
                 </div>
               </div>
 
+              {/* Длительность брони — сколько гость хочет сидеть */}
+              <div>
+                <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-[color:var(--muted)]">
+                  Qancha vaqt o&apos;tirasiz?
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {DURATION_CHOICES.map((d) => (
+                    <button
+                      key={d.minutes}
+                      type="button"
+                      onClick={() => setDurationMinutes(d.minutes)}
+                      className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
+                        durationMinutes === d.minutes
+                          ? "border-[color:var(--brand)] bg-[color:var(--brand)] text-white shadow-sm"
+                          : "border-[color:var(--border)] bg-white text-[color:var(--fg)] hover:border-[color:var(--brand)] hover:text-[color:var(--brand-700)]"
+                      }`}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-xs text-[color:var(--muted)]">
+                  Stol shu vaqt davomida siz uchun band bo&apos;ladi.
+                </p>
+              </div>
+
               {/* Подсказка «N variant bor» */}
               <GuestHint
                 guests={guests}
@@ -755,6 +805,7 @@ export default function BronClient() {
                   zoneType={selectedZone?.type}
                   tables={tablesPayload.tables}
                   selectedId={tableId}
+                  minSeats={guests}
                   floorConfig={selectedZone?.floorPlanSvg ?? null}
                   onSelect={(id) => {
                     setTableId(id);
@@ -851,6 +902,7 @@ export default function BronClient() {
                         <SummaryRow k="Filial" v={selectedBranch?.name ?? "—"} />
                         <SummaryRow k="Manzil" v={selectedBranch?.address ?? "—"} />
                         <SummaryRow k="Sana va vaqt" v={date && time ? `${date} · ${time}` : "—"} />
+                        <SummaryRow k="Davomiyligi" v={durationLabel(durationMinutes)} />
                         <SummaryRow k="Mehmonlar" v={`${guests} kishi`} />
                         <SummaryRow k="Zona" v={selectedZone?.name ?? "—"} />
                         <SummaryRow

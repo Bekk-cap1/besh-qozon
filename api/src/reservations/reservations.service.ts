@@ -18,7 +18,10 @@ import {
   LOYALTY_THRESHOLD,
   MAX_ACTIVE_RESERVATIONS_PER_DAY,
   MAX_DAYS_AHEAD,
+  MAX_DURATION_MINUTES,
+  MIN_DURATION_MINUTES,
   RESERVATION_DURATION_MINUTES,
+  SLOT_STEP_MINUTES,
 } from '../constants/booking';
 import { daysFromToday, isPastSlot } from '../utils/slots';
 
@@ -168,6 +171,7 @@ export class ReservationsService implements OnModuleInit {
       tableId: string;
       startAt: string;
       guestsCount: number;
+      durationMinutes?: number;
       useBonus?: boolean;
       items?: { menuItemId: string; quantity: number }[];
     },
@@ -186,7 +190,11 @@ export class ReservationsService implements OnModuleInit {
     if (delta < 0 || delta > MAX_DAYS_AHEAD) throw new BadRequestException('Sana oralig‘i noto‘g‘ri');
     if (isPastSlot(startAt)) throw new BadRequestException('O‘tgan vaqt tanlanmagan');
 
-    const endAt = new Date(startAt.getTime() + RESERVATION_DURATION_MINUTES * 60 * 1000);
+    // Длительность выбирает гость: кратна 30 мин, в диапазоне 60–240, иначе дефолт 120.
+    let durationMin = dto.durationMinutes ?? RESERVATION_DURATION_MINUTES;
+    durationMin = Math.round(durationMin / SLOT_STEP_MINUTES) * SLOT_STEP_MINUTES;
+    durationMin = Math.min(MAX_DURATION_MINUTES, Math.max(MIN_DURATION_MINUTES, durationMin));
+    const endAt = new Date(startAt.getTime() + durationMin * 60 * 1000);
 
     const dayStart = new Date(startAt.getFullYear(), startAt.getMonth(), startAt.getDate());
     const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
